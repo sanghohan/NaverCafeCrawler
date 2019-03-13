@@ -1,0 +1,104 @@
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using System.IO;
+
+namespace cromeDriverTest
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            
+            IWebDriver driver;
+
+            Debug.WriteLine("Guru99");
+
+            driver = new ChromeDriver("C:\\chromedriver_win32\\");
+
+            string url = "http://cafe.naver.com/anjungmom?iframe_url=/ArticleSearchList.nhn%3Fsearch.clubid=13186768%26search.media=0%26search.searchdate=all%26userDisplay=50%26search.option=0%26search.sortBy=date%26search.searchBy=1%26search.query=%C5%C2%BE%C6%BA%B8%C7%E8%26search.viewtype=title%26search.page=3";
+
+            driver.Navigate().GoToUrl(url);
+                
+            //Thread.Sleep(3000);
+    
+            IWebElement element = driver.FindElement(By.Id("cafe_main"));
+            
+            
+            driver.SwitchTo().Frame(element);
+            IWebElement iframeElement = driver.FindElement(By.Name("ArticleList"));
+            //driver.SwitchTo().Frame(iframeElement);
+                       
+
+            String html = iframeElement.GetAttribute("innerHTML");
+            
+            parser htmlParser = new parser();
+            htmlParser.parseHtml(html);
+            //htmlParser.parseHtml(null);
+
+
+        }
+
+
+    }
+
+    class parser
+    {
+        internal void parseHtml(string html)
+        {
+            //Debug.WriteLine(html);
+            
+            System.IO.File.WriteAllText(@"c:\\html.txt", html);
+
+             String parsedString = String.Empty;
+
+             foreach (string line in File.ReadLines(@"c:\\html.txt"))
+             {
+                 if (line.Contains("pers_nick_area"))
+                 {
+                     Debug.WriteLine(line);
+                     parsedString += line + "\n";
+                 }
+             }
+             
+
+            //System.IO.File.WriteAllText(@"c:\\html.txt", parsedString);
+            //onclick="ui(event, 'kozlzl1107',3,'하은마미 현화','13186768','', 'false', 'true', 'anjungmom', 'false', '32');
+
+            foreach (string line in File.ReadLines(@"c:\\html.txt"))
+            {
+                //line.
+                {
+                    if (line.IndexOf("ui(event,") > 0 )
+                    {
+                        int start = line.IndexOf("ui(event,");
+                        int end = line.IndexOf("\'anjungmom\',");
+
+                        Debug.WriteLine("start : " + start);
+                        Debug.WriteLine("end : " + end);
+                        Debug.WriteLine(line.Substring(start+9, end-start));
+                        string returnString = line.Substring(start + 9, end - start);
+                        StreamWriter writer = new StreamWriter(@"c:\\anpomam.csv", true, Encoding.Default);
+                        
+                        writer.WriteLine(returnString);
+
+                        writer.Close();
+                    }
+
+                    
+                    //parsedString += line + "\n";
+                }
+            }
+
+
+        }
+
+
+    }
+}
